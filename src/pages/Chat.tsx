@@ -23,7 +23,7 @@ export default function Chat() {
   const { logout } = useAuthStore();
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [conversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(false);
   const [medicineDetails, setMedicineDetails] = useState<any | null>(null); // State for medicine details
   const messagesEndRef = useRef<HTMLDivElement>(null);

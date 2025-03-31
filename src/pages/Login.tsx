@@ -7,6 +7,7 @@ import { useAuthStore } from '../store/authStore';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import { LogIn } from 'lucide-react';
+import GoogleLoginButton from '../components/GoogleLoginButton'; // Import GoogleLoginButton
 
 const schema = z.object({
   email: z.string().email('Invalid email address'),
@@ -93,6 +94,18 @@ export default function Login() {
             Sign in
           </Button>
         </form>
+
+        <div className="mt-6">
+          <div className="relative flex items-center justify-center">
+            <span className="absolute bg-background px-2 text-sm text-foreground/70">
+              Or login with
+            </span>
+            <div className="w-full border-t border-secondary/20"></div>
+          </div>
+          <div className="mt-4">
+            <GoogleLoginButton /> {/* Add GoogleLoginButton */}
+          </div>
+        </div>
       </div>
     </div>
   );
