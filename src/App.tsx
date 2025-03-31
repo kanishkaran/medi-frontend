@@ -8,6 +8,7 @@ import OrderHistory from './pages/OrderHistory';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import Payment from './pages/Payment';
+import User from './pages/User';
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const token = useAuthStore((state) => state.token);
@@ -58,6 +59,14 @@ function App() {
             element={
               <PrivateRoute>
                 <Payment />
+              </PrivateRoute>
+            }
+          />
+          <Route 
+            path="/user"
+            element={
+              <PrivateRoute>
+                <User />
               </PrivateRoute>
             }
           />

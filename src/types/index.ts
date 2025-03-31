@@ -21,10 +21,11 @@ export interface Conversation {
 }
 
 export interface CartItem {
-  id: string;
-  name: string;
-  quantity: number;
-  price: number;
+  id: string; // Unique identifier for the cart item
+  name: string; // Name of the medicine
+  quantity: number; // Quantity of the item in the cart
+  price: number; // Price per unit
+  image_url: string; // URL of the item's image
 }
 
 export interface Order {

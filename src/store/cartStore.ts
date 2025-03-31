@@ -1,8 +1,10 @@
 import { create } from 'zustand';
 import type { CartItem } from '../types';
+import { cart } from '../lib/api'; // Import the cart API
 
 interface CartState {
   items: CartItem[];
+  fetchCart: () => Promise<void>;
   addItem: (item: CartItem) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
@@ -11,6 +13,14 @@ interface CartState {
 
 export const useCartStore = create<CartState>()((set) => ({
   items: [],
+  fetchCart: async () => {
+    try {
+      const response = await cart.get(); // Fetch cart items from the backend
+      set({ items: response });
+    } catch (error) {
+      console.error('Failed to fetch cart:', error);
+    }
+  },
   addItem: (item) =>
     set((state) => {
       const existingItem = state.items.find((i) => i.id === item.id);

@@ -1,4 +1,3 @@
-import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -31,9 +30,15 @@ export default function Login() {
   const onSubmit = async (data: FormData) => {
     try {
       const response = await auth.login(data);
-      setToken(response.access_token);
-      navigate('/chat');
+      console.log('Login response:', response); // Debugging
+      if (response && response.access_token) {
+        setToken(response.access_token); // Save token to store
+        navigate('/chat'); // Redirect to chat page
+      } else {
+        throw new Error('Invalid response from server');
+      }
     } catch (error: any) {
+      console.error('Login error:', error); // Debugging
       const message = error.response?.data?.message || 'Invalid email or password';
       setError('root', { message });
     }
