@@ -50,6 +50,12 @@ export const chat = {
     const response = await api.post('/chat', { message: message.trim() }, { headers: { "Content-Type": "application/json" } });
     return response.data;
   },
+  recognizeHandwriting: async (formData: FormData) => {
+    const response = await api.post('/recognize', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
 };
 
 // Orders-related API calls
@@ -78,11 +84,12 @@ export const cart = {
     const response = await api.post('/checkout');
     return response.data;
   },
-  payment: async (paymentMethod: string, totalAmount: number) => {
-    const response = await api.post('/payment', {
-      payment_method: paymentMethod,
-      total_amount: totalAmount,
-    });
+  paymentOrder: async (data: { amount: number }) => {
+    const response = await api.post('/payment/intent', data);
+    return response.data;
+  },
+  verifyPayment: async (data: { payment_intent_id: string }) => {
+    const response = await api.post('/payment/verify', data);
     return response.data;
   },
 };

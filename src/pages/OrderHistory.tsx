@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { orders } from '../lib/api';
-import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import { ChevronDown, ChevronUp, Clock, XCircle } from 'lucide-react';
 import type { Order } from '../types';
 import { formatPrice } from '../lib/utils';
 
@@ -8,6 +8,7 @@ export default function OrderHistory() {
   const [orderList, setOrderList] = useState<Order[]>([]);
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [cancelling, setCancelling] = useState<string | null>(null); // Track the order being cancelled
 
   useEffect(() => {
     const loadOrders = async () => {
@@ -43,6 +44,25 @@ export default function OrderHistory() {
         return 'text-red-500';
       default:
         return 'text-blue-500';
+    }
+  };
+
+  const cancelOrder = async (orderId: string) => {
+    setCancelling(orderId); // Set the order being cancelled
+    try {
+      const response = await orders.cancel(orderId); // Call the cancel API
+      console.log(response.message); // Log the success message
+  
+      // Update the orderList state to reflect the cancelled status
+      setOrderList((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === orderId ? { ...order, status: 'cancelled' } : order
+        )
+      );
+    } catch (error: any) {
+      console.error('Failed to cancel order:', error.response?.data || error.message);
+    } finally {
+      setCancelling(null); // Reset cancelling state
     }
   };
 
@@ -97,7 +117,7 @@ export default function OrderHistory() {
 
               {expandedOrders.has(order.id) && (
                 <div className="p-4 border-t border-secondary/20">
-                  <table className="w-full">
+                  <table className="w-full mb-4">
                     <thead>
                       <tr className="text-left text-sm text-foreground/70">
                         <th className="pb-2">Item</th>
@@ -117,6 +137,20 @@ export default function OrderHistory() {
                       ))}
                     </tbody>
                   </table>
+
+                  {/* Cancel Order Button */}
+                  {order.status !== 'cancelled' && (
+                    <button
+                      className="flex items-center space-x-2 text-red-500 hover:underline"
+                      onClick={() => cancelOrder(order.id)}
+                      disabled={cancelling === order.id} // Disable button while cancelling
+                    >
+                      <XCircle className="h-5 w-5" />
+                      <span>
+                        {cancelling === order.id ? 'Cancelling...' : 'Cancel Order'}
+                      </span>
+                    </button>
+                  )}
                 </div>
               )}
             </div>

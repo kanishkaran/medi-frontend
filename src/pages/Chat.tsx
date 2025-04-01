@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { chat, cart } from '../lib/api'; // Import cart API
 import { useAuthStore } from '../store/authStore';
+import { useMedicineStore } from '../store/medicineStore'; // Import medicineStore
 import Button from '../components/Button';
 import Input from '../components/Input';
 import ReactMarkdown from 'react-markdown';
@@ -13,16 +14,19 @@ import {
   Send,
   ShoppingCart,
   X,
+  Eye,
 } from 'lucide-react';
+import MedicineDetailsCard from '../components/MedicineDetailsCard'; // Import MedicineDetailsCard component
 import type { ChatMessage } from '../types';
 
 export default function Chat() {
   const navigate = useNavigate();
   const { logout } = useAuthStore();
+  const { medicines, addMedicine, removeMedicine } = useMedicineStore(); // Access medicineStore
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
-  const [medicineDetails, setMedicineDetails] = useState<any | null>(null); // State for medicine details
+  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -53,9 +57,15 @@ export default function Chat() {
 
       if (response) {
         if (response.intent === 'search_medicine' && response.medicine_details) {
-          setMedicineDetails(response.medicine_details); // Show medicine details in the sidebar
-        } else {
-          setMedicineDetails(null);
+          // Ensure medicine_details is treated as an array
+          const medicines = Array.isArray(response.medicine_details)
+            ? response.medicine_details
+            : [response.medicine_details];
+
+          medicines.forEach((medicine: any) => {
+            addMedicine(medicine); // Add each medicine to the store
+          });
+          setIsSidebarVisible(true); // Open the sidebar
         }
 
         const botMessage: ChatMessage = {
@@ -94,24 +104,26 @@ export default function Chat() {
     navigate('/login');
   };
 
-  const handleAddToCart = async () => {
-    if (!medicineDetails) return;
-
+  const handleAddToCart = async (medicineId: string) => {
     try {
-      await cart.add(medicineDetails.id, 1); // Use the cart.add function from api.ts
-      alert(`Added ${medicineDetails.name} to cart!`);
+      await cart.add(medicineId, 1); // Use the cart.add function from api.ts
+      alert('Added medicine to cart!');
     } catch (error: any) {
       console.error('Error adding to cart:', error);
       alert(error.response?.data?.message || 'An error occurred while adding to the cart.');
     }
   };
 
+  const handleRemoveMedicine = (medicineId: string) => {
+    removeMedicine(medicineId); // Remove medicine from the store
+  };
+
   const handleViewCart = () => {
     navigate('/cart'); // Navigate to the cart page
   };
 
-  const closeSidebar = () => {
-    setMedicineDetails(null); // Close the sidebar
+  const toggleSidebar = () => {
+    setIsSidebarVisible((prev) => !prev); // Toggle sidebar visibility
   };
 
   return (
@@ -124,6 +136,8 @@ export default function Chat() {
             <h1 className="text-xl font-bold">MediVerse</h1>
           </div>
         </div>
+
+        <div className="flex-1"></div> {/* Push Sign Out button to the bottom */}
 
         <div className="p-4 border-t border-secondary/20">
           <Button
@@ -148,8 +162,11 @@ export default function Chat() {
             >
               <ShoppingCart className="h-5 w-5 text-primary" />
             </button>
-            <button className="p-2 hover:bg-secondary/10 rounded-lg">
-              <Search className="h-5 w-5" />
+            <button
+              className="p-2 hover:bg-secondary/10 rounded-lg"
+              onClick={toggleSidebar} // Toggle sidebar visibility
+            >
+              <Eye className="h-5 w-5 text-primary" />
             </button>
             <button
               className="p-2 hover:bg-secondary/10 rounded-lg"
@@ -207,45 +224,39 @@ export default function Chat() {
 
         {/* Medicine Details Sidebar */}
         <div
-          className={`absolute top-0 right-0 w-80 h-full bg-white shadow-lg border-l border-secondary/20 p-6 transform transition-transform duration-300 ${
-            medicineDetails ? 'translate-x-0' : 'translate-x-full'
+          className={`absolute top-0 right-0 w-80 h-full bg-gray-50 shadow-lg border-l border-secondary/20 p-6 transition-opacity duration-300 ${
+            isSidebarVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
           }`}
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-primary">Medicine Details</h3>
             <button
               className="p-1 rounded-full hover:bg-secondary/10 transition-colors"
-              onClick={closeSidebar}
+              onClick={toggleSidebar} // Close the sidebar
             >
-              <X className="h-5 w-5 text-foreground" />
+              <X className="h-5 w-5 text-gray-600" />
             </button>
           </div>
-          {medicineDetails && (
-            <>
-              <img
-                src={medicineDetails.image_url}
-                alt={medicineDetails.name}
-                className="w-full h-40 object-cover rounded-lg mb-4"
-              />
-              <div className="space-y-2">
-                <p className="text-sm font-semibold">
-                  <span className="text-secondary">Name:</span> {medicineDetails.name}
-                </p>
-                <p className="text-sm">
-                  <span className="text-secondary">Pack Size:</span> {medicineDetails.pack_size_label}
-                </p>
-                <p className="text-sm">
-                  <span className="text-secondary">Price:</span> ₹{medicineDetails.price}
-                </p>
-              </div>
-              <Button
-                className="mt-6 w-full"
-                onClick={handleAddToCart}
-              >
-                Add to Cart
-              </Button>
-            </>
-          )}
+          <div className="overflow-y-auto h-[calc(100%-4rem)]">
+            {medicines.length > 0 ? (
+              medicines.map((medicine) => (
+                <div key={medicine.id} className="mb-4">
+                  <MedicineDetailsCard
+                    medicineDetails={medicine}
+                    onAddToCart={() => handleAddToCart(medicine.id)}
+                  />
+                  <button
+                    className="mt-2 text-sm text-red-500 hover:underline"
+                    onClick={() => handleRemoveMedicine(medicine.id)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-600">No medicine details available.</p>
+            )}
+          </div>
         </div>
       </div>
     </div>
