@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { chat, cart } from '../lib/api'; // Import cart API
+import { chat, cart } from '../lib/api'; // Import chat and cart APIs
 import { useAuthStore } from '../store/authStore';
 import { useMedicineStore } from '../store/medicineStore'; // Import medicineStore
 import Button from '../components/Button';
 import Input from '../components/Input';
 import ReactMarkdown from 'react-markdown';
+import PrescriptionHandler from '../components/PrescriptionHandler'; // Import PrescriptionHandler
 import {
   MessageSquare,
-  Search,
   CircleUser,
   LogOut,
   Send,
@@ -26,7 +26,7 @@ export default function Chat() {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(false); // Sidebar visibility state
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -90,6 +90,12 @@ export default function Chat() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePrescriptionConfirm = async (predictedLabel: string) => {
+    // Send the predicted label as a search query
+    setMessage(predictedLabel);
+    await handleSend(); // Invoke the search_medicine intent
   };
 
   const formatResponse = (response: any): string => {
@@ -204,21 +210,24 @@ export default function Chat() {
         </div>
 
         <div className="p-4 border-t border-secondary/20">
-          <div className="max-w-4xl mx-auto flex space-x-4">
-            <Input
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Type your message..."
-              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              className="flex-1"
-            />
-            <Button
-              onClick={handleSend}
-              isLoading={loading}
-              disabled={!message.trim()}
-            >
-              <Send className="h-5 w-5" />
-            </Button>
+          <div className="max-w-4xl mx-auto flex flex-col space-y-4">
+            <PrescriptionHandler onConfirm={handlePrescriptionConfirm} />
+            <div className="flex space-x-4">
+              <Input
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Type your message..."
+                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                className="flex-1"
+              />
+              <Button
+                onClick={handleSend}
+                isLoading={loading}
+                disabled={!message.trim()}
+              >
+                <Send className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
         </div>
 
