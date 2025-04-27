@@ -25,7 +25,7 @@ const GoogleLoginButton: React.FC = () => {
       const accessToken = user.getAuthResponse().access_token;
 
       // Send the access token to the backend
-      const res = await fetch("http://localhost:5000/login/google", {
+      const res = await fetch("https://medi-backend-dgf7.onrender.com/login/google", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

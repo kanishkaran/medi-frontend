@@ -32,7 +32,7 @@ const PrescriptionHandler: React.FC<PrescriptionHandlerProps> = ({ onConfirm, on
 
     setLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:5000/recognize', {
+      const response = await fetch('https://medi-backend-dgf7.onrender.com/recognize', {
         method: 'POST',
         body: formData,
       });
