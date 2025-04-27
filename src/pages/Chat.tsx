@@ -15,6 +15,7 @@ import {
   ShoppingCart,
   X,
   Eye,
+  Plus,
 } from 'lucide-react';
 import MedicineDetailsCard from '../components/MedicineDetailsCard'; // Import MedicineDetailsCard component
 import type { ChatMessage } from '../types';
@@ -27,6 +28,7 @@ export default function Chat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false); // Sidebar visibility state
+  const [isPrescriptionVisible, setIsPrescriptionVisible] = useState(false); // PrescriptionHandler visibility state
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -132,6 +134,10 @@ export default function Chat() {
     setIsSidebarVisible((prev) => !prev); // Toggle sidebar visibility
   };
 
+  const togglePrescriptionHandler = () => {
+    setIsPrescriptionVisible((prev) => !prev); // Toggle PrescriptionHandler visibility
+  };
+
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
@@ -148,7 +154,7 @@ export default function Chat() {
         <div className="p-4 border-t border-secondary/20">
           <Button
             variant="ghost"
-            className="w-full justify-start"
+            className="w-full flex items-center justify-start px-4 py-2 text-lg font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors rounded-lg"
             onClick={handleLogout}
           >
             <LogOut className="h-5 w-5 mr-2" />
@@ -187,16 +193,14 @@ export default function Chat() {
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className={`flex ${
-                msg.sender === 'user' ? 'justify-end' : 'justify-start'
-              }`}
+              className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'
+                }`}
             >
               <div
-                className={`max-w-[70%] rounded-lg p-3 ${
-                  msg.sender === 'user'
-                    ? 'bg-primary text-white'
-                    : 'bg-secondary/10'
-                }`}
+                className={`max-w-[70%] rounded-lg p-3 ${msg.sender === 'user'
+                  ? 'bg-primary text-white'
+                  : 'bg-secondary/10'
+                  }`}
               >
                 {msg.sender === 'bot' ? (
                   <ReactMarkdown>{msg.content}</ReactMarkdown>
@@ -211,8 +215,19 @@ export default function Chat() {
 
         <div className="p-4 border-t border-secondary/20">
           <div className="max-w-4xl mx-auto flex flex-col space-y-4">
-            <PrescriptionHandler onConfirm={handlePrescriptionConfirm} />
-            <div className="flex space-x-4">
+            <div
+              className={`transition-all duration-500 ${isPrescriptionVisible ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                } overflow-hidden`}
+            >
+              <PrescriptionHandler onConfirm={handlePrescriptionConfirm} />
+            </div>
+            <div className="flex space-x-4 items-center">
+              <button
+                className="p-2 hover:bg-secondary/10 rounded-lg"
+                onClick={togglePrescriptionHandler}
+              >
+                <Plus className="h-5 w-5 text-primary" />
+              </button>
               <Input
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
@@ -233,9 +248,8 @@ export default function Chat() {
 
         {/* Medicine Details Sidebar */}
         <div
-          className={`absolute top-0 right-0 w-80 h-full bg-gray-50 shadow-lg border-l border-secondary/20 p-6 transition-opacity duration-300 ${
-            isSidebarVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-          }`}
+          className={`absolute top-0 right-0 w-80 h-full bg-gray-50 shadow-lg border-l border-secondary/20 p-6 transition-opacity duration-300 ${isSidebarVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+            }`}
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-primary">Medicine Details</h3>

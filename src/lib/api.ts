@@ -80,6 +80,13 @@ export const cart = {
     const response = await api.get('/cart');
     return response.data;
   },
+  delete: async (id: string) => {
+    const response = await api.delete(`/cart/${id}`);
+    if (!response.status.toString().startsWith("2")) {
+      throw new Error("Failed to delete cart item");
+    }
+    return response.data;
+  },
   checkout: async () => {
     const response = await api.post('/checkout');
     return response.data;

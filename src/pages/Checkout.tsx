@@ -1,18 +1,23 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
 import Button from '../components/Button';
 import { CreditCard, Package } from 'lucide-react';
 import { formatPrice } from '../lib/utils';
+import { useState } from 'react';
 
 export default function Checkout() {
   const navigate = useNavigate();
   const { items } = useCartStore();
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('card'); // Default to card
 
   const total = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
+
+  const handleProceedToPayment = () => {
+    navigate('/payment', { state: { paymentMethod: selectedPaymentMethod } }); // Pass payment method to Payment page
+  };
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -62,9 +67,44 @@ export default function Checkout() {
               <p className="text-foreground/70 mb-4">
                 Select a payment method to continue
               </p>
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="card"
+                    checked={selectedPaymentMethod === 'card'}
+                    onChange={() => setSelectedPaymentMethod('card')}
+                    className="form-radio text-primary"
+                  />
+                  <span>Credit/Debit Card</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="google_pay"
+                    checked={selectedPaymentMethod === 'google_pay'}
+                    onChange={() => setSelectedPaymentMethod('google_pay')}
+                    className="form-radio text-primary"
+                  />
+                  <span>Google Pay</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="apple_pay"
+                    checked={selectedPaymentMethod === 'apple_pay'}
+                    onChange={() => setSelectedPaymentMethod('apple_pay')}
+                    className="form-radio text-primary"
+                  />
+                  <span>Apple Pay</span>
+                </label>
+              </div>
               <Button
-                className="w-full"
-                onClick={() => navigate('/payment')}
+                className="w-full mt-4"
+                onClick={handleProceedToPayment}
               >
                 Proceed to Payment
               </Button>

@@ -16,9 +16,21 @@ export const useCartStore = create<CartState>()((set) => ({
   fetchCart: async () => {
     try {
       const response = await cart.get(); // Fetch cart items from the backend
-      set({ items: response });
+      console.log("Fetched cart items from backend:", response); // Debugging log
+  
+      // Map backend response to match frontend structure
+      const mappedItems = response.map((item: any) => ({
+        id: item.medicine_id, // Map medicine_id to id
+        name: item.medicine_name,
+        quantity: item.quantity,
+        price: item.price,
+        image_url: item.image_url,
+      }));
+  
+      console.log("Mapped cart items:", mappedItems); // Debugging log
+      set({ items: mappedItems });
     } catch (error) {
-      console.error('Failed to fetch cart:', error);
+      console.error("Failed to fetch cart:", error);
     }
   },
   addItem: (item) =>
@@ -35,10 +47,20 @@ export const useCartStore = create<CartState>()((set) => ({
       }
       return { items: [...state.items, item] };
     }),
-  removeItem: (id) =>
-    set((state) => ({
-      items: state.items.filter((item) => item.id !== id),
-    })),
+    removeItem: async (id: string) => {
+      try {
+        // Call the backend API to delete the item
+        await cart.delete(id);
+        console.log(`Deleted item with id: ${id} from the backend`);
+  
+        // Update the local state to remove the item
+        set((state) => ({
+          items: state.items.filter((item) => item.id !== id),
+        }));
+      } catch (error) {
+        console.error(`Failed to delete item with id: ${id}`, error);
+      }
+    },
   updateQuantity: (id, quantity) =>
     set((state) => ({
       items: state.items.map((item) =>
